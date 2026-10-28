@@ -1,15 +1,14 @@
-
-/* ========================================
+/* ==========================================
    HATENA. — Neon Personal Website
-   style.css
-======================================== */
+   Responsive / Visibility-safe version
+========================================== */
 
 :root {
   color-scheme: dark;
   --bg: #070a0f;
   --bg-soft: #0b1119;
-  --panel: rgba(14, 23, 33, 0.78);
-  --panel-hover: rgba(17, 32, 43, 0.96);
+  --panel: rgba(14, 23, 33, 0.86);
+  --panel-hover: rgba(17, 32, 43, 0.98);
   --cyan: #48e5ff;
   --cyan-soft: #9bf2ff;
   --cyan-dark: #0c8299;
@@ -35,7 +34,13 @@ html {
 body {
   margin: 0;
   min-width: 320px;
-  background: var(--bg);
+  background:
+    radial-gradient(
+      ellipse at 50% 15%,
+      rgba(0, 100, 125, 0.09),
+      transparent 55%
+    ),
+    var(--bg);
   color: var(--text);
   font-family:
     Inter,
@@ -59,13 +64,17 @@ a {
   font: inherit;
 }
 
+button {
+  color: inherit;
+}
+
 a {
   color: inherit;
   text-decoration: none;
 }
 
-button {
-  color: inherit;
+img {
+  max-width: 100%;
 }
 
 button:focus-visible,
@@ -79,17 +88,26 @@ a:focus-visible {
   background: var(--cyan);
 }
 
-/* Background */
+/* ==========================================
+   Background
+========================================== */
 
 .background-grid {
   position: fixed;
   inset: 0;
-  z-index: -3;
+  z-index: 0;
   pointer-events: none;
-  opacity: 0.22;
+  opacity: 0.2;
   background-image:
-    linear-gradient(rgba(72, 229, 255, 0.045) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(72, 229, 255, 0.045) 1px, transparent 1px);
+    linear-gradient(
+      rgba(72, 229, 255, 0.045) 1px,
+      transparent 1px
+    ),
+    linear-gradient(
+      90deg,
+      rgba(72, 229, 255, 0.045) 1px,
+      transparent 1px
+    );
   background-size: 48px 48px;
   mask-image: linear-gradient(to bottom, black, transparent 90%);
 }
@@ -102,7 +120,7 @@ a:focus-visible {
   filter: blur(110px);
   opacity: 0.09;
   pointer-events: none;
-  z-index: -2;
+  z-index: 0;
 }
 
 .glow-one {
@@ -119,16 +137,26 @@ a:focus-visible {
   animation: glow-drift 16s ease-in-out infinite alternate-reverse;
 }
 
+.site-header,
+main,
+.site-footer {
+  position: relative;
+  z-index: 1;
+}
+
 @keyframes glow-drift {
   from {
     transform: translate3d(0, -20px, 0) scale(0.9);
   }
+
   to {
     transform: translate3d(-30px, 40px, 0) scale(1.15);
   }
 }
 
-/* Header */
+/* ==========================================
+   Header and navigation
+========================================== */
 
 .site-header {
   position: sticky;
@@ -140,7 +168,7 @@ a:focus-visible {
   justify-content: space-between;
   padding: 0 max(5%, calc((100% - var(--content-width)) / 2));
   border-bottom: 1px solid rgba(72, 229, 255, 0.1);
-  background: rgba(7, 10, 15, 0.82);
+  background: rgba(7, 10, 15, 0.9);
   backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
 }
@@ -196,11 +224,11 @@ a:focus-visible {
 
 .menu-toggle {
   display: none;
-  width: 44px;
-  height: 44px;
-  padding: 12px 10px;
+  width: 48px;
+  height: 48px;
+  padding: 11px 10px;
   border: 1px solid var(--border);
-  border-radius: 10px;
+  border-radius: 12px;
   background: var(--panel);
   cursor: pointer;
 }
@@ -208,20 +236,23 @@ a:focus-visible {
 .menu-toggle span {
   display: block;
   height: 2px;
-  margin: 5px 0;
+  margin: 6px 0;
   background: var(--cyan);
+  box-shadow: 0 0 8px rgba(72, 229, 255, 0.3);
   transition: transform 0.25s ease;
 }
 
 .menu-toggle[aria-expanded="true"] span:first-child {
-  transform: translateY(3.5px) rotate(45deg);
+  transform: translateY(4px) rotate(45deg);
 }
 
 .menu-toggle[aria-expanded="true"] span:last-child {
-  transform: translateY(-3.5px) rotate(-45deg);
+  transform: translateY(-4px) rotate(-45deg);
 }
 
-/* Common layout */
+/* ==========================================
+   Common sections
+========================================== */
 
 .section {
   width: min(var(--content-width), 90%);
@@ -285,13 +316,16 @@ a:focus-visible {
     opacity: 1;
     box-shadow: 0 0 12px var(--cyan);
   }
+
   50% {
-    opacity: 0.45;
+    opacity: 0.5;
     box-shadow: 0 0 3px var(--cyan);
   }
 }
 
-/* Hero */
+/* ==========================================
+   Hero
+========================================== */
 
 .hero {
   min-height: min(760px, calc(100svh - var(--header-height)));
@@ -379,7 +413,9 @@ a:focus-visible {
   font-size: 1.1rem;
 }
 
-/* Animated orbit */
+/* ==========================================
+   Animated orbit graphic
+========================================== */
 
 .hero-visual {
   position: relative;
@@ -459,6 +495,7 @@ a:focus-visible {
   0%, 100% {
     transform: translateY(0);
   }
+
   50% {
     transform: translateY(-9px);
   }
@@ -524,7 +561,9 @@ a:focus-visible {
   box-shadow: 0 0 12px var(--cyan);
 }
 
-/* About cards */
+/* ==========================================
+   About cards
+========================================== */
 
 .about-grid {
   display: grid;
@@ -601,7 +640,9 @@ a:focus-visible {
   font-weight: 900;
 }
 
-/* Shorts */
+/* ==========================================
+   YouTube Shorts
+========================================== */
 
 .shorts-layout {
   display: grid;
@@ -627,7 +668,11 @@ a:focus-visible {
   display: grid;
   place-items: center;
   background:
-    radial-gradient(circle at center, rgba(72, 229, 255, 0.07), transparent 60%),
+    radial-gradient(
+      circle at center,
+      rgba(72, 229, 255, 0.07),
+      transparent 60%
+    ),
     #04070b;
   overflow: hidden;
 }
@@ -642,6 +687,7 @@ a:focus-visible {
 
 .shorts-placeholder {
   display: flex;
+  width: 100%;
   min-height: 240px;
   flex-direction: column;
   align-items: center;
@@ -658,7 +704,7 @@ a:focus-visible {
 
 .shorts-placeholder[hidden],
 .shorts-player-wrap iframe[hidden] {
-  display: none;
+  display: none !important;
 }
 
 .loading-spinner {
@@ -724,15 +770,20 @@ a:focus-visible {
   padding: 18px 0;
 }
 
+/* Supports both the current script.js and older class names. */
+
+.shorts-item,
 .short-item {
   display: grid;
-  grid-template-columns: 112px minmax(0, 1fr);
+  width: 100%;
+  grid-template-columns: 112px minmax(0, 1fr) auto;
   align-items: center;
   gap: 13px;
   padding: 8px;
   border: 1px solid transparent;
   border-radius: 12px;
   background: transparent;
+  color: var(--text);
   text-align: left;
   cursor: pointer;
   transition:
@@ -741,6 +792,8 @@ a:focus-visible {
     transform 0.2s ease;
 }
 
+.shorts-item:hover,
+.shorts-item.is-active,
 .short-item:hover,
 .short-item.is-active {
   transform: translateX(3px);
@@ -748,6 +801,7 @@ a:focus-visible {
   background: rgba(72, 229, 255, 0.055);
 }
 
+.shorts-thumbnail,
 .short-thumbnail {
   width: 112px;
   aspect-ratio: 16 / 9;
@@ -756,6 +810,13 @@ a:focus-visible {
   background: #101923;
 }
 
+.shorts-item-content {
+  display: grid;
+  min-width: 0;
+  gap: 5px;
+}
+
+.shorts-item-title,
 .short-item-title {
   display: -webkit-box;
   overflow: hidden;
@@ -768,11 +829,27 @@ a:focus-visible {
   -webkit-line-clamp: 3;
 }
 
+.shorts-item-date,
 .short-item-label {
   display: block;
-  margin-top: 5px;
   color: var(--muted);
   font-size: 0.62rem;
+}
+
+.shorts-play-icon {
+  color: var(--cyan);
+  font-size: 0.85rem;
+}
+
+.shorts-fallback-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: 9px;
+  color: var(--cyan);
+  font-size: 0.78rem;
 }
 
 .shorts-sidebar .secondary-button {
@@ -791,7 +868,9 @@ a:focus-visible {
   font-size: 0.72rem;
 }
 
-/* Game accounts table */
+/* ==========================================
+   Game account table
+========================================== */
 
 .accounts-panel {
   overflow: hidden;
@@ -962,7 +1041,9 @@ a:focus-visible {
   font-size: 0.72rem;
 }
 
-/* Footer */
+/* ==========================================
+   Footer
+========================================== */
 
 .site-footer {
   width: min(var(--content-width), 90%);
@@ -993,30 +1074,51 @@ a:focus-visible {
   color: var(--cyan);
 }
 
-/* Scroll reveal */
+/* ==========================================
+   Reveal animation — visibility-safe
+========================================== */
+
+/*
+  IMPORTANT:
+  Keep elements visible by default.
+  This prevents the entire page from disappearing
+  if JavaScript or IntersectionObserver fails.
+*/
 
 .reveal {
-  opacity: 0;
-  transform: translateY(22px);
-  transition:
-    opacity 0.7s ease,
-    transform 0.7s cubic-bezier(0.2, 0.7, 0.2, 1);
+  opacity: 1;
+  visibility: visible;
+  transform: none;
 }
 
+/* If JS marks the element as visible, animate it gently. */
 .reveal.is-visible {
-  opacity: 1;
-  transform: translateY(0);
+  animation: reveal-in 0.55s ease both;
+}
+
+@keyframes reveal-in {
+  from {
+    opacity: 0.65;
+    transform: translateY(12px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 .about-card:nth-child(2) {
-  transition-delay: 0.08s;
+  animation-delay: 0.08s;
 }
 
 .about-card:nth-child(3) {
-  transition-delay: 0.16s;
+  animation-delay: 0.16s;
 }
 
-/* Responsive */
+/* ==========================================
+   Tablet
+========================================== */
 
 @media (max-width: 900px) {
   .hero {
@@ -1057,6 +1159,10 @@ a:focus-visible {
   }
 }
 
+/* ==========================================
+   Mobile
+========================================== */
+
 @media (max-width: 600px) {
   :root {
     --header-height: 66px;
@@ -1085,10 +1191,12 @@ a:focus-visible {
     gap: 0;
     padding: 8px 5% 18px;
     border-bottom: 1px solid var(--border);
-    background: rgba(7, 10, 15, 0.97);
+    background: rgba(7, 10, 15, 0.98);
     backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
     opacity: 0;
     visibility: hidden;
+    pointer-events: none;
     transform: translateY(-8px);
     transition:
       opacity 0.22s ease,
@@ -1099,6 +1207,7 @@ a:focus-visible {
   .site-nav.is-open {
     opacity: 1;
     visibility: visible;
+    pointer-events: auto;
     transform: translateY(0);
   }
 
@@ -1172,12 +1281,15 @@ a:focus-visible {
     flex-direction: column;
   }
 
+  .shorts-item,
   .short-item {
-    grid-template-columns: 100px minmax(0, 1fr);
+    grid-template-columns: 88px minmax(0, 1fr) auto;
+    gap: 10px;
   }
 
+  .shorts-thumbnail,
   .short-thumbnail {
-    width: 100px;
+    width: 88px;
   }
 
   .accounts-toolbar {
@@ -1258,7 +1370,9 @@ a:focus-visible {
   }
 }
 
-/* Respect reduced motion settings */
+/* ==========================================
+   Reduced motion / accessibility
+========================================== */
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -1270,9 +1384,11 @@ a:focus-visible {
     transition-duration: 0.01ms !important;
   }
 
-  .reveal {
-    opacity: 1;
-    transform: none;
+  .reveal,
+  .reveal.is-visible {
+    opacity: 1 !important;
+    visibility: visible !important;
+    transform: none !important;
+    animation: none !important;
   }
 }
-
