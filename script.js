@@ -4,7 +4,6 @@
 
 const CONFIG = {
   youtubeHandle: "hatenacat",
-  // 既存のAPIキーをここにそのまま残してください。
   youtubeApiKey: "AIzaSyB6IiGXtBSEZp1TJIc4jgsswCtHjmRvk1E",
   youtubeMaxCandidates: 30,
   youtubeDisplayCount: 3,
@@ -91,7 +90,6 @@ function initScrollReveal() {
     ".reveal, .reveal-up, .reveal-left, .reveal-right"
   );
 
-  // JavaScriptが動かない場合でもCSS側で本文を表示する。
   if (!("IntersectionObserver" in window)) {
     elements.forEach(element => element.classList.add("is-visible"));
     return;
@@ -146,7 +144,7 @@ function initCopyButtons() {
         setText(button, "FAILED");
       }
 
-      window.setTimeout(() => {
+      setTimeout(() => {
         setText(button, originalText || "COPY");
       }, 1400);
     });
@@ -215,7 +213,6 @@ async function loadRobloxAvatar(image) {
     const avatarUrl = await getRobloxAvatar(user.id);
     image.src = avatarUrl || makeAvatarFallback(username);
     image.alt = `${user.name} Roblox avatar`;
-    image.dataset.loaded = "true";
 
     const profileLink = image.closest("[data-roblox-profile]");
     if (profileLink) {
@@ -235,23 +232,13 @@ function initRobloxAvatars() {
     image.addEventListener("error", () => {
       if (image.dataset.fallbackApplied === "true") return;
       image.dataset.fallbackApplied = "true";
-      image.src = makeAvatarFallback(image.dataset.robloxUsername || "R");
+      image.src = makeAvatarFallback(
+        image.dataset.robloxUsername || "R"
+      );
     });
 
     loadRobloxAvatar(image);
   });
-}
-
-function parseDuration(duration) {
-  const match = duration.match(
-    /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/
-  );
-
-  if (!match) return 0;
-
-  return Number(match[1] || 0) * 3600
-    + Number(match[2] || 0) * 60
-    + Number(match[3] || 0);
 }
 
 function formatDate(dateString) {
@@ -311,13 +298,30 @@ function renderYouTubeVideos(videos) {
 
   list.replaceChildren();
 
-  if (!videos.length) {
+  if (!videos || videos.length === 0) {
+    if (player) {
+      player.hidden = true;
+      player.src = "about:blank";
+    }
+
     showYouTubeFallback("表示できる動画が見つかりませんでした。");
     return;
   }
 
+  const firstVideo = videos[0];
+  const firstVideoId = firstVideo.id;
+  const firstTitle = firstVideo.snippet?.title || "Latest YouTube Video";
+
+  if (player && firstVideoId) {
+    player.src =
+      `https://www.youtube-nocookie.com/embed/${encodeURIComponent(firstVideoId)}?rel=0`;
+    player.title = firstTitle;
+    player.hidden = false;
+  }
+
+  if (placeholder) placeholder.hidden = true;
   if (status) setText(status, "最新の動画を読み込みました。");
-  if (placeholder) placeholder.hidden = false;
+  if (title) setText(title, firstTitle);
 
   videos.forEach((video, index) => {
     const videoId = video.id;
@@ -337,21 +341,28 @@ function renderYouTubeVideos(videos) {
     }
 
     const content = makeElement("span", "shorts-item-content");
-    content.appendChild(makeElement("span", "shorts-item-title", videoTitle));
     content.appendChild(
-      makeElement("span", "shorts-item-date", formatDate(video.snippet?.publishedAt))
+      makeElement("span", "shorts-item-title", videoTitle)
+    );
+    content.appendChild(
+      makeElement(
+        "span",
+        "shorts-item-date",
+        formatDate(video.snippet?.publishedAt)
+      )
     );
 
     item.appendChild(content);
     item.appendChild(makeElement("span", "shorts-play-icon", "▶"));
 
+    if (index === 0) item.classList.add("is-active");
+
     item.addEventListener("click", () => {
       if (player) {
         player.src =
-          `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}` +
-          "?autoplay=1&rel=0";
-        player.hidden = false;
+          `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0`;
         player.title = videoTitle;
+        player.hidden = false;
       }
 
       if (placeholder) placeholder.hidden = true;
@@ -364,24 +375,14 @@ function renderYouTubeVideos(videos) {
       item.classList.add("is-active");
     });
 
-    if (index === 0) item.classList.add("is-active");
     list.appendChild(item);
   });
-
-  if (title) {
-    setText(title, videos[0].snippet?.title || "Latest YouTube Video");
-  }
 }
 
 async function loadYouTubeVideos() {
   const status = $("#shorts-status");
 
   try {
-    if (!CONFIG.youtubeApiKey ||
-        CONFIG.youtubeApiKey === "YOUR_EXISTING_API_KEY") {
-      throw new Error("YouTube APIキーが設定されていません。");
-    }
-
     if (status) setText(status, "YouTube動画を読み込み中...");
 
     const key = encodeURIComponent(CONFIG.youtubeApiKey);
@@ -394,10 +395,16 @@ async function loadYouTubeVideos() {
     const channelData = await fetchJson(channelUrl);
     const channel = channelData.items?.[0];
 
-    if (!channel) throw new Error("YouTubeチャンネルが見つかりませんでした。");
+    if (!channel) {
+      throw new Error("YouTubeチャンネルが見つかりませんでした。");
+    }
 
-    const uploadsPlaylist = channel.contentDetails?.relatedPlaylists?.uploads;
-    if (!uploadsPlaylist) throw new Error("アップロード一覧を取得できませんでした。");
+    const uploadsPlaylist =
+      channel.contentDetails?.relatedPlaylists?.uploads;
+
+    if (!uploadsPlaylist) {
+      throw new Error("アップロード一覧を取得できませんでした。");
+    }
 
     const playlistUrl =
       "https://www.googleapis.com/youtube/v3/playlistItems" +
@@ -409,7 +416,9 @@ async function loadYouTubeVideos() {
       .map(item => item.contentDetails?.videoId)
       .filter(Boolean);
 
-    if (!videoIds.length) throw new Error("動画が見つかりませんでした。");
+    if (!videoIds.length) {
+      throw new Error("動画が見つかりませんでした。");
+    }
 
     const videosUrl =
       "https://www.googleapis.com/youtube/v3/videos" +
@@ -419,7 +428,18 @@ async function loadYouTubeVideos() {
 
     const videos = (videosData.items || [])
       .filter(video => {
-        const seconds = parseDuration(video.contentDetails?.duration || "");
+        const duration = video.contentDetails?.duration || "";
+        const match = duration.match(
+          /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/
+        );
+
+        if (!match) return false;
+
+        const seconds =
+          Number(match[1] || 0) * 3600
+          + Number(match[2] || 0) * 60
+          + Number(match[3] || 0);
+
         return seconds > 0 && seconds <= 180;
       })
       .sort((a, b) =>
@@ -431,6 +451,7 @@ async function loadYouTubeVideos() {
     renderYouTubeVideos(videos);
   } catch (error) {
     console.error("YouTube API error:", error);
+
     showYouTubeFallback(
       "動画を読み込めませんでした。APIキー・API制限・割り当てを確認してください。"
     );
@@ -441,7 +462,8 @@ function initYouTube() {
   const shortsLink = $("#shorts-channel-link");
 
   if (shortsLink) {
-    shortsLink.href = `https://www.youtube.com/@${CONFIG.youtubeHandle}/shorts`;
+    shortsLink.href =
+      `https://www.youtube.com/@${CONFIG.youtubeHandle}/shorts`;
     shortsLink.target = "_blank";
     shortsLink.rel = "noopener noreferrer";
   }
