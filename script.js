@@ -8,7 +8,7 @@ const CONFIG = {
   youtubeMaxCandidates: 30,
   youtubeDisplayCount: 3,
   robloxThumbnailSize: "420x420",
-  requestTimeout: 12000
+  requestTimeout: 15000
 };
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -26,6 +26,10 @@ function makeElement(tag, className, text) {
   return element;
 }
 
+/* ------------------------------
+   Network
+------------------------------ */
+
 async function fetchJson(url, options = {}) {
   const controller = new AbortController();
   const timeout = setTimeout(
@@ -40,7 +44,7 @@ async function fetchJson(url, options = {}) {
     });
 
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
+      throw new Error(`HTTP ${response.status}: ${url}`);
     }
 
     return await response.json();
@@ -49,9 +53,12 @@ async function fetchJson(url, options = {}) {
   }
 }
 
+/* ------------------------------
+   Navigation
+------------------------------ */
+
 function initCurrentYear() {
-  const year = $("#current-year");
-  if (year) setText(year, String(new Date().getFullYear()));
+  setText($("#current-year"), String(new Date().getFullYear()));
 }
 
 function initNavigation() {
@@ -60,14 +67,14 @@ function initNavigation() {
 
   if (!toggle || !menu) return;
 
-  function closeMenu() {
+  const closeMenu = () => {
     menu.classList.remove("is-open");
     toggle.setAttribute("aria-expanded", "false");
-  }
+  };
 
   toggle.addEventListener("click", () => {
-    const isOpen = menu.classList.toggle("is-open");
-    toggle.setAttribute("aria-expanded", String(isOpen));
+    const open = menu.classList.toggle("is-open");
+    toggle.setAttribute("aria-expanded", String(open));
   });
 
   $$("a", menu).forEach(link => {
@@ -85,6 +92,10 @@ function initNavigation() {
   });
 }
 
+/* ------------------------------
+   Scroll reveal
+------------------------------ */
+
 function initScrollReveal() {
   const elements = $$(
     ".reveal, .reveal-up, .reveal-left, .reveal-right"
@@ -98,6 +109,7 @@ function initScrollReveal() {
   const observer = new IntersectionObserver(entries => {
     entries.forEach(entry => {
       if (!entry.isIntersecting) return;
+
       entry.target.classList.add("is-visible");
       observer.unobserve(entry.target);
     });
@@ -109,6 +121,10 @@ function initScrollReveal() {
   elements.forEach(element => observer.observe(element));
 }
 
+/* ------------------------------
+   Copy buttons
+------------------------------ */
+
 async function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
     await navigator.clipboard.writeText(text);
@@ -119,6 +135,7 @@ async function copyText(text) {
   textarea.value = text;
   textarea.style.position = "fixed";
   textarea.style.opacity = "0";
+
   document.body.appendChild(textarea);
   textarea.select();
 
@@ -131,13 +148,10 @@ async function copyText(text) {
 function initCopyButtons() {
   $$("[data-copy]").forEach(button => {
     button.addEventListener("click", async () => {
-      const value = button.dataset.copy;
-      if (!value) return;
-
-      const originalText = button.textContent;
+      const original = button.textContent;
 
       try {
-        await copyText(value);
+        await copyText(button.dataset.copy || "");
         setText(button, "COPIED!");
       } catch (error) {
         console.error("Copy failed:", error);
@@ -145,18 +159,24 @@ function initCopyButtons() {
       }
 
       setTimeout(() => {
-        setText(button, originalText || "COPY");
+        setText(button, original || "COPY");
       }, 1400);
     });
   });
 }
+
+/* ------------------------------
+   Roblox API
+------------------------------ */
 
 async function getRobloxUser(username) {
   const data = await fetchJson(
     "https://users.roblox.com/v1/usernames/users",
     {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json"
+      },
       body: JSON.stringify({
         usernames: [username],
         excludeBannedUsers: false
@@ -164,7 +184,15 @@ async function getRobloxUser(username) {
     }
   );
 
-  return data.data?.[0] || null;
+  const user = data.data?.find(
+    item => item.name?.toLowerCase() === username.toLowerCase()
+  );
+
+  if (!user?.id) {
+    throw new Error(`Roblox username not found: ${username}`);
+  }
+
+  return user;
 }
 
 async function getRobloxAvatar(userId) {
@@ -179,8 +207,20 @@ async function getRobloxAvatar(userId) {
     `https://thumbnails.roblox.com/v1/users/avatar-headshot?${params}`
   );
 
-  return data.data?.[0]?.imageUrl || null;
+  const result = data.data?.find(
+    item => String(item.targetId) === String(userId)
+  );
+
+  if (result?.state !== "Completed" || !result.imageUrl) {
+    throw new Error(`Roblox thumbnail unavailable: ${userId}`);
+  }
+
+  return result.imageUrl;
 }
+
+/* ------------------------------
+   Avatar fallback
+------------------------------ */
 
 function makeAvatarFallback(username) {
   const initials = username
@@ -204,47 +244,68 @@ function makeAvatarFallback(username) {
 
 async function loadRobloxAvatar(image) {
   const username = image.dataset.robloxUsername;
-  if (!username) return;
+
+  if (!username) {
+    console.warn("Roblox avatar image is missing data-roblox-username", image);
+    return;
+  }
+
+  image.dataset.avatarState = "loading";
 
   try {
     const user = await getRobloxUser(username);
-    if (!user?.id) throw new Error(`Roblox user not found: ${username}`);
-
     const avatarUrl = await getRobloxAvatar(user.id);
-    image.src = avatarUrl || makeAvatarFallback(username);
-    image.alt = `${user.name} Roblox avatar`;
+
+    image.onload = () => {
+      image.dataset.avatarState = "loaded";
+    };
+
+    image.onerror = () => {
+      image.dataset.avatarState = "error";
+      image.src = makeAvatarFallback(username);
+    };
+
+    image.src = avatarUrl;
+    image.alt = `${user.displayName || user.name} Roblox avatar`;
 
     const profileLink = image.closest("[data-roblox-profile]");
+
     if (profileLink) {
-      profileLink.href = `https://www.roblox.com/users/${user.id}/profile`;
+      profileLink.href =
+        `https://www.roblox.com/users/${user.id}/profile`;
       profileLink.target = "_blank";
       profileLink.rel = "noopener noreferrer";
     }
+
+    console.info(`Roblox avatar loaded: ${username}`, user.id);
   } catch (error) {
-    console.warn(`Could not load Roblox avatar for ${username}:`, error);
+    console.error(`Roblox avatar failed: ${username}`, error);
+
+    image.dataset.avatarState = "error";
     image.src = makeAvatarFallback(username);
     image.alt = `${username} avatar placeholder`;
   }
 }
 
 function initRobloxAvatars() {
-  $$("img[data-roblox-username]").forEach(image => {
-    image.addEventListener("error", () => {
-      if (image.dataset.fallbackApplied === "true") return;
-      image.dataset.fallbackApplied = "true";
-      image.src = makeAvatarFallback(
-        image.dataset.robloxUsername || "R"
-      );
-    });
+  const images = $$("img[data-roblox-username]");
 
+  console.info(`Roblox avatar images found: ${images.length}`);
+
+  images.forEach(image => {
     loadRobloxAvatar(image);
   });
 }
+
+/* ------------------------------
+   YouTube Shorts
+------------------------------ */
 
 function formatDate(dateString) {
   if (!dateString) return "";
 
   const date = new Date(dateString);
+
   if (Number.isNaN(date.getTime())) return "";
 
   return new Intl.DateTimeFormat("ja-JP", {
@@ -265,26 +326,24 @@ function getThumbnail(video) {
 }
 
 function showYouTubeFallback(message) {
-  const status = $("#shorts-status");
+  setText($("#shorts-status"), message);
+
   const list = $("#shorts-list");
-  const placeholder = $("#shorts-placeholder");
 
-  if (status) setText(status, message);
-  if (placeholder) placeholder.hidden = false;
+  if (!list || $("#shorts-fallback-link", list)) return;
 
-  if (list && !$("#shorts-fallback-link", list)) {
-    const link = makeElement(
-      "a",
-      "shorts-fallback-link",
-      "YouTubeでShortsを見る ↗"
-    );
+  const link = makeElement(
+    "a",
+    "shorts-fallback-link",
+    "YouTubeでShortsを見る ↗"
+  );
 
-    link.id = "shorts-fallback-link";
-    link.href = `https://www.youtube.com/@${CONFIG.youtubeHandle}/shorts`;
-    link.target = "_blank";
-    link.rel = "noopener noreferrer";
-    list.appendChild(link);
-  }
+  link.id = "shorts-fallback-link";
+  link.href = `https://www.youtube.com/@${CONFIG.youtubeHandle}/shorts`;
+  link.target = "_blank";
+  link.rel = "noopener noreferrer";
+
+  list.appendChild(link);
 }
 
 function renderYouTubeVideos(videos) {
@@ -308,27 +367,28 @@ function renderYouTubeVideos(videos) {
     return;
   }
 
-  const firstVideo = videos[0];
-  const firstVideoId = firstVideo.id;
-  const firstTitle = firstVideo.snippet?.title || "Latest YouTube Video";
+  const setPlayer = video => {
+    if (!player) return;
 
-  if (player && firstVideoId) {
     player.src =
-      `https://www.youtube-nocookie.com/embed/${encodeURIComponent(firstVideoId)}?rel=0`;
-    player.title = firstTitle;
-    player.hidden = false;
-  }
+      `https://www.youtube-nocookie.com/embed/${encodeURIComponent(video.id)}?rel=0`;
 
-  if (placeholder) placeholder.hidden = true;
+    player.title = video.snippet?.title || "YouTube Video";
+    player.hidden = false;
+
+    if (placeholder) placeholder.hidden = true;
+    if (title) setText(title, player.title);
+  };
+
+  setPlayer(videos[0]);
+
   if (status) setText(status, "最新の動画を読み込みました。");
-  if (title) setText(title, firstTitle);
 
   videos.forEach((video, index) => {
-    const videoId = video.id;
+    const item = makeElement("button", "shorts-item");
     const videoTitle = video.snippet?.title || "YouTube Video";
     const thumbnail = getThumbnail(video);
 
-    const item = makeElement("button", "shorts-item");
     item.type = "button";
     item.setAttribute("aria-label", `${videoTitle}を再生`);
 
@@ -341,9 +401,11 @@ function renderYouTubeVideos(videos) {
     }
 
     const content = makeElement("span", "shorts-item-content");
+
     content.appendChild(
       makeElement("span", "shorts-item-title", videoTitle)
     );
+
     content.appendChild(
       makeElement(
         "span",
@@ -358,15 +420,7 @@ function renderYouTubeVideos(videos) {
     if (index === 0) item.classList.add("is-active");
 
     item.addEventListener("click", () => {
-      if (player) {
-        player.src =
-          `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0`;
-        player.title = videoTitle;
-        player.hidden = false;
-      }
-
-      if (placeholder) placeholder.hidden = true;
-      if (title) setText(title, videoTitle);
+      setPlayer(video);
 
       $$(".shorts-item", list).forEach(button => {
         button.classList.remove("is-active");
@@ -383,50 +437,48 @@ async function loadYouTubeVideos() {
   const status = $("#shorts-status");
 
   try {
-    if (status) setText(status, "YouTube動画を読み込み中...");
+    setText(status, "YouTube動画を読み込み中...");
 
     const key = encodeURIComponent(CONFIG.youtubeApiKey);
     const handle = encodeURIComponent(`@${CONFIG.youtubeHandle}`);
 
-    const channelUrl =
+    const channelData = await fetchJson(
       "https://www.googleapis.com/youtube/v3/channels" +
-      `?part=contentDetails,snippet&forHandle=${handle}&key=${key}`;
+      `?part=contentDetails,snippet&forHandle=${handle}&key=${key}`
+    );
 
-    const channelData = await fetchJson(channelUrl);
     const channel = channelData.items?.[0];
 
     if (!channel) {
       throw new Error("YouTubeチャンネルが見つかりませんでした。");
     }
 
-    const uploadsPlaylist =
-      channel.contentDetails?.relatedPlaylists?.uploads;
+    const playlistId = channel.contentDetails?.relatedPlaylists?.uploads;
 
-    if (!uploadsPlaylist) {
+    if (!playlistId) {
       throw new Error("アップロード一覧を取得できませんでした。");
     }
 
-    const playlistUrl =
+    const playlistData = await fetchJson(
       "https://www.googleapis.com/youtube/v3/playlistItems" +
-      `?part=snippet,contentDetails&playlistId=${encodeURIComponent(uploadsPlaylist)}` +
-      `&maxResults=${CONFIG.youtubeMaxCandidates}&key=${key}`;
+      `?part=snippet,contentDetails&playlistId=${encodeURIComponent(playlistId)}` +
+      `&maxResults=${CONFIG.youtubeMaxCandidates}&key=${key}`
+    );
 
-    const playlistData = await fetchJson(playlistUrl);
-    const videoIds = (playlistData.items || [])
+    const ids = (playlistData.items || [])
       .map(item => item.contentDetails?.videoId)
       .filter(Boolean);
 
-    if (!videoIds.length) {
+    if (!ids.length) {
       throw new Error("動画が見つかりませんでした。");
     }
 
-    const videosUrl =
+    const videoData = await fetchJson(
       "https://www.googleapis.com/youtube/v3/videos" +
-      `?part=snippet,contentDetails&id=${videoIds.join(",")}&key=${key}`;
+      `?part=snippet,contentDetails&id=${ids.join(",")}&key=${key}`
+    );
 
-    const videosData = await fetchJson(videosUrl);
-
-    const videos = (videosData.items || [])
+    const videos = (videoData.items || [])
       .filter(video => {
         const duration = video.contentDetails?.duration || "";
         const match = duration.match(
@@ -436,15 +488,15 @@ async function loadYouTubeVideos() {
         if (!match) return false;
 
         const seconds =
-          Number(match[1] || 0) * 3600
-          + Number(match[2] || 0) * 60
-          + Number(match[3] || 0);
+          Number(match[1] || 0) * 3600 +
+          Number(match[2] || 0) * 60 +
+          Number(match[3] || 0);
 
         return seconds > 0 && seconds <= 180;
       })
       .sort((a, b) =>
-        new Date(b.snippet?.publishedAt || 0)
-        - new Date(a.snippet?.publishedAt || 0)
+        new Date(b.snippet?.publishedAt || 0) -
+        new Date(a.snippet?.publishedAt || 0)
       )
       .slice(0, CONFIG.youtubeDisplayCount);
 
@@ -459,23 +511,30 @@ async function loadYouTubeVideos() {
 }
 
 function initYouTube() {
-  const shortsLink = $("#shorts-channel-link");
+  const link = $("#shorts-channel-link");
 
-  if (shortsLink) {
-    shortsLink.href =
-      `https://www.youtube.com/@${CONFIG.youtubeHandle}/shorts`;
-    shortsLink.target = "_blank";
-    shortsLink.rel = "noopener noreferrer";
+  if (link) {
+    link.href = `https://www.youtube.com/@${CONFIG.youtubeHandle}/shorts`;
+    link.target = "_blank";
+    link.rel = "noopener noreferrer";
   }
 
   loadYouTubeVideos();
 }
+
+/* ------------------------------
+   External links
+------------------------------ */
 
 function initExternalLinks() {
   $$('a[target="_blank"]').forEach(link => {
     link.rel = "noopener noreferrer";
   });
 }
+
+/* ------------------------------
+   Initialize
+------------------------------ */
 
 function init() {
   initCurrentYear();
