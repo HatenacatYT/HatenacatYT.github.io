@@ -1450,3 +1450,62 @@ section[id],
     transform: none;
   }
 }
+
+/* ===== WHITE THEME FORCE OVERRIDE ===== */
+
+:root {
+  color-scheme: light !important;
+  --bg: #ffffff !important;
+  --surface: #ffffff !important;
+  --surface-solid: #ffffff !important;
+  --text: #17243b !important;
+  --text-secondary: #687891 !important;
+  --blue: #8bbcff !important;
+  --blue-strong: #4c8ff0 !important;
+  --blue-pale: #edf5ff !important;
+  --border: #e4ecf6 !important;
+}
+
+html,
+body {
+  background: #ffffff !important;
+  color: #17243b !important;
+}
+
+.page-background {
+  background: #ffffff !important;
+}
+
+.background-grid {
+  opacity: 0.12 !important;
+}
+
+.site-header {
+  background: rgba(255, 255, 255, 0.96) !important;
+}
+
+.content-card,
+.roblox-account,
+.button-secondary {
+  background-color: #ffffff !important;
+}
+
+.content-card {
+  border-color: #e4ecf6 !important;
+}
+
+.site-footer {
+  border-top-color: #e4ecf6 !important;
+}
+
+@media (prefers-color-scheme: dark) {
+  html,
+  body,
+  .page-background,
+  .site-header,
+  .content-card,
+  .roblox-account {
+    background-color: #ffffff !important;
+    color: #17243b !important;
+  }
+}
