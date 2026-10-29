@@ -1,6 +1,7 @@
+
 "use strict";
 
-/* HATENA. Personal Website */
+/* HATENACAT — Personal Website */
 
 const CONFIG = {
   youtubeHandle: "hatenacat",
@@ -21,14 +22,12 @@ function setText(element, text) {
 
 function makeElement(tag, className, text) {
   const element = document.createElement(tag);
+
   if (className) element.className = className;
   if (text !== undefined) element.textContent = text;
+
   return element;
 }
-
-/* ------------------------------
-   Network
------------------------------- */
 
 async function fetchJson(url, options = {}) {
   const controller = new AbortController();
@@ -53,14 +52,12 @@ async function fetchJson(url, options = {}) {
   }
 }
 
-/* ------------------------------
-   Navigation
------------------------------- */
-
+/* 年号 */
 function initCurrentYear() {
   setText($("#current-year"), String(new Date().getFullYear()));
 }
 
+/* ナビゲーション */
 function initNavigation() {
   const toggle = $("#menu-toggle");
   const menu = $("#site-nav");
@@ -70,14 +67,28 @@ function initNavigation() {
   const closeMenu = () => {
     menu.classList.remove("is-open");
     toggle.setAttribute("aria-expanded", "false");
+    toggle.setAttribute("aria-label", "メニューを開く");
+    document.body.classList.remove("menu-open");
+  };
+
+  const openMenu = () => {
+    menu.classList.add("is-open");
+    toggle.setAttribute("aria-expanded", "true");
+    toggle.setAttribute("aria-label", "メニューを閉じる");
+    document.body.classList.add("menu-open");
   };
 
   toggle.addEventListener("click", () => {
-    const open = menu.classList.toggle("is-open");
-    toggle.setAttribute("aria-expanded", String(open));
+    const isOpen = menu.classList.contains("is-open");
+
+    if (isOpen) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
   });
 
-  $$("a", menu).forEach(link => {
+  $$(".nav-link", menu).forEach(link => {
     link.addEventListener("click", closeMenu);
   });
 
@@ -86,20 +97,58 @@ function initNavigation() {
   });
 
   document.addEventListener("click", event => {
-    if (!menu.contains(event.target) && !toggle.contains(event.target)) {
+    if (
+      menu.classList.contains("is-open") &&
+      !menu.contains(event.target) &&
+      !toggle.contains(event.target)
+    ) {
       closeMenu();
     }
   });
+
+  window.addEventListener("resize", () => {
+    if (window.innerWidth > 620) closeMenu();
+  });
 }
 
-/* ------------------------------
-   Scroll reveal
------------------------------- */
+/* 現在見ているセクションをメニューに反映 */
+function initActiveNavigation() {
+  const links = $$(".nav-link[href^='#']");
+  const sections = links
+    .map(link => $(link.getAttribute("href")))
+    .filter(Boolean);
 
+  if (!("IntersectionObserver" in window)) return;
+
+  const observer = new IntersectionObserver(entries => {
+    const visible = entries
+      .filter(entry => entry.isIntersecting)
+      .sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
+
+    if (!visible) return;
+
+    links.forEach(link => {
+      const active = link.getAttribute("href") === `#${visible.target.id}`;
+
+      link.classList.toggle("active", active);
+
+      if (active) {
+        link.setAttribute("aria-current", "location");
+      } else {
+        link.removeAttribute("aria-current");
+      }
+    });
+  }, {
+    rootMargin: "-20% 0px -60% 0px",
+    threshold: [0, 0.15, 0.35, 0.6]
+  });
+
+  sections.forEach(section => observer.observe(section));
+}
+
+/* スクロール時のフェード */
 function initScrollReveal() {
-  const elements = $$(
-    ".reveal, .reveal-up, .reveal-left, .reveal-right"
-  );
+  const elements = $$(".reveal");
 
   if (!("IntersectionObserver" in window)) {
     elements.forEach(element => element.classList.add("is-visible"));
@@ -114,17 +163,98 @@ function initScrollReveal() {
       observer.unobserve(entry.target);
     });
   }, {
-    threshold: 0.12,
-    rootMargin: "0px 0px -35px 0px"
+    threshold: 0.08,
+    rootMargin: "0px 0px -25px 0px"
   });
 
   elements.forEach(element => observer.observe(element));
 }
 
-/* ------------------------------
-   Copy buttons
------------------------------- */
+/* アクセスごとにカードの順序・幅を変更 */
+function shuffleArray(array) {
+  const result = [...array];
 
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
+function initRandomLayout() {
+  const grid = $("#content-grid");
+
+  if (!grid) return;
+
+  const cards = $$("[data-card]", grid);
+
+  if (cards.length < 2) return;
+
+  const order = shuffleArray(cards);
+
+  // DOMの順番を入れ替える。各カードのIDは変えない。
+  order.forEach(card => grid.appendChild(card));
+
+  // 幅も訪問ごとに変化させる。
+  // モバイル時の幅はCSSで上書きして読みやすさを維持する。
+  order.forEach(card => {
+    const type = card.dataset.card;
+
+    if (type === "youtube") {
+      card.style.gridColumn = Math.random() < 0.72
+        ? "span 12"
+        : "span 8";
+      return;
+    }
+
+    if (type === "games") {
+      const spans = [5, 7, 12];
+      const weights = [0.25, 0.35, 0.40];
+      card.style.gridColumn = `span ${weightedChoice(spans, weights)}`;
+      return;
+    }
+
+    const spans = [4, 5, 6, 7, 8];
+    const weights = [0.10, 0.25, 0.30, 0.25, 0.10];
+
+    card.style.gridColumn = `span ${weightedChoice(spans, weights)}`;
+  });
+
+  // 並べ替えたカードは新しい順序で自然に表示する。
+  cards.forEach((card, index) => {
+    card.style.transitionDelay = `${Math.min(index * 45, 220)}ms`;
+  });
+}
+
+function weightedChoice(values, weights) {
+  const total = weights.reduce((sum, weight) => sum + weight, 0);
+  let random = Math.random() * total;
+
+  for (let i = 0; i < values.length; i++) {
+    random -= weights[i];
+
+    if (random <= 0) return values[i];
+  }
+
+  return values[values.length - 1];
+}
+
+/* ページ上部へ戻る */
+function initBackToTop() {
+  const button = $("#back-to-top");
+
+  if (!button) return;
+
+  const update = () => {
+    button.classList.toggle("is-visible", window.scrollY > 500);
+  };
+
+  window.addEventListener("scroll", update, { passive: true });
+  update();
+}
+
+/* コピー */
 async function copyText(text) {
   if (navigator.clipboard && window.isSecureContext) {
     await navigator.clipboard.writeText(text);
@@ -133,6 +263,7 @@ async function copyText(text) {
 
   const textarea = document.createElement("textarea");
   textarea.value = text;
+  textarea.setAttribute("readonly", "");
   textarea.style.position = "fixed";
   textarea.style.opacity = "0";
 
@@ -153,6 +284,7 @@ function initCopyButtons() {
       try {
         await copyText(button.dataset.copy || "");
         setText(button, "COPIED!");
+        button.setAttribute("aria-label", "コピーしました");
       } catch (error) {
         console.error("Copy failed:", error);
         setText(button, "FAILED");
@@ -160,15 +292,16 @@ function initCopyButtons() {
 
       setTimeout(() => {
         setText(button, original || "COPY");
+        button.setAttribute(
+          "aria-label",
+          `${button.dataset.copy || ""}をコピー`
+        );
       }, 1400);
     });
   });
 }
 
-/* ------------------------------
-   Roblox API
------------------------------- */
-
+/* Roblox */
 async function getRobloxUser(username) {
   const data = await fetchJson(
     "https://users.roblox.com/v1/usernames/users",
@@ -218,10 +351,6 @@ async function getRobloxAvatar(userId) {
   return result.imageUrl;
 }
 
-/* ------------------------------
-   Avatar fallback
------------------------------- */
-
 function makeAvatarFallback(username) {
   const initials = username
     .replace(/[^a-z0-9]/gi, "")
@@ -230,25 +359,29 @@ function makeAvatarFallback(username) {
 
   const svg = `
     <svg xmlns="http://www.w3.org/2000/svg" width="420" height="420">
-      <rect width="420" height="420" rx="48" fill="#071116"/>
+      <rect width="420" height="420" rx="48" fill="#edf5ff"/>
       <rect x="8" y="8" width="404" height="404" rx="40"
-        fill="none" stroke="#00eaff" stroke-width="4"/>
+        fill="none" stroke="#77aaff" stroke-width="4"/>
       <text x="210" y="245" text-anchor="middle"
         font-family="Arial,sans-serif" font-size="132"
-        font-weight="700" fill="#00eaff">${initials}</text>
+        font-weight="700" fill="#4389f5">${initials}</text>
     </svg>
   `;
 
   return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
 }
 
+function setAvatarFallback(image, username) {
+  image.dataset.avatarState = "error";
+  image.onerror = null;
+  image.src = makeAvatarFallback(username);
+  image.alt = `${username} avatar placeholder`;
+}
+
 async function loadRobloxAvatar(image) {
   const username = image.dataset.robloxUsername;
 
-  if (!username) {
-    console.warn("Roblox avatar image is missing data-roblox-username", image);
-    return;
-  }
+  if (!username) return;
 
   image.dataset.avatarState = "loading";
 
@@ -256,34 +389,31 @@ async function loadRobloxAvatar(image) {
     const user = await getRobloxUser(username);
     const avatarUrl = await getRobloxAvatar(user.id);
 
+    const profileLink = image.closest("[data-roblox-profile]");
+
+    if (profileLink) {
+      profileLink.href = `https://www.roblox.com/users/${user.id}/profile`;
+      profileLink.target = "_blank";
+      profileLink.rel = "noopener noreferrer";
+    }
+
+    image.alt = `${user.displayName || user.name} Roblox avatar`;
+
     image.onload = () => {
       image.dataset.avatarState = "loaded";
     };
 
     image.onerror = () => {
-      image.dataset.avatarState = "error";
-      image.src = makeAvatarFallback(username);
+      console.error(`Roblox image URL failed: ${username}`, avatarUrl);
+      setAvatarFallback(image, username);
     };
 
     image.src = avatarUrl;
-    image.alt = `${user.displayName || user.name} Roblox avatar`;
 
-    const profileLink = image.closest("[data-roblox-profile]");
-
-    if (profileLink) {
-      profileLink.href =
-        `https://www.roblox.com/users/${user.id}/profile`;
-      profileLink.target = "_blank";
-      profileLink.rel = "noopener noreferrer";
-    }
-
-    console.info(`Roblox avatar loaded: ${username}`, user.id);
+    console.info(`Roblox avatar requested: ${username}`, user.id);
   } catch (error) {
     console.error(`Roblox avatar failed: ${username}`, error);
-
-    image.dataset.avatarState = "error";
-    image.src = makeAvatarFallback(username);
-    image.alt = `${username} avatar placeholder`;
+    setAvatarFallback(image, username);
   }
 }
 
@@ -297,10 +427,7 @@ function initRobloxAvatars() {
   });
 }
 
-/* ------------------------------
-   YouTube Shorts
------------------------------- */
-
+/* YouTube */
 function formatDate(dateString) {
   if (!dateString) return "";
 
@@ -329,8 +456,9 @@ function showYouTubeFallback(message) {
   setText($("#shorts-status"), message);
 
   const list = $("#shorts-list");
+  if (!list) return;
 
-  if (!list || $("#shorts-fallback-link", list)) return;
+  list.replaceChildren();
 
   const link = makeElement(
     "a",
@@ -338,7 +466,6 @@ function showYouTubeFallback(message) {
     "YouTubeでShortsを見る ↗"
   );
 
-  link.id = "shorts-fallback-link";
   link.href = `https://www.youtube.com/@${CONFIG.youtubeHandle}/shorts`;
   link.target = "_blank";
   link.rel = "noopener noreferrer";
@@ -363,6 +490,8 @@ function renderYouTubeVideos(videos) {
       player.src = "about:blank";
     }
 
+    if (placeholder) placeholder.hidden = false;
+
     showYouTubeFallback("表示できる動画が見つかりませんでした。");
     return;
   }
@@ -370,19 +499,24 @@ function renderYouTubeVideos(videos) {
   const setPlayer = video => {
     if (!player) return;
 
-    player.src =
-      `https://www.youtube-nocookie.com/embed/${encodeURIComponent(video.id)}?rel=0`;
+    const videoId = video.id;
+    const videoTitle = video.snippet?.title || "YouTube Video";
 
-    player.title = video.snippet?.title || "YouTube Video";
+    player.src =
+      `https://www.youtube-nocookie.com/embed/${encodeURIComponent(videoId)}?rel=0`;
+
+    player.title = videoTitle;
     player.hidden = false;
 
     if (placeholder) placeholder.hidden = true;
-    if (title) setText(title, player.title);
+    if (title) setText(title, videoTitle);
   };
 
   setPlayer(videos[0]);
 
-  if (status) setText(status, "最新の動画を読み込みました。");
+  if (status) {
+    setText(status, "最新の動画を読み込みました。");
+  }
 
   videos.forEach((video, index) => {
     const item = makeElement("button", "shorts-item");
@@ -390,6 +524,7 @@ function renderYouTubeVideos(videos) {
     const thumbnail = getThumbnail(video);
 
     item.type = "button";
+    item.setAttribute("aria-pressed", String(index === 0));
     item.setAttribute("aria-label", `${videoTitle}を再生`);
 
     if (thumbnail) {
@@ -397,6 +532,10 @@ function renderYouTubeVideos(videos) {
       image.src = thumbnail;
       image.alt = "";
       image.loading = "lazy";
+      image.onerror = () => {
+        image.hidden = true;
+      };
+
       item.appendChild(image);
     }
 
@@ -424,9 +563,11 @@ function renderYouTubeVideos(videos) {
 
       $$(".shorts-item", list).forEach(button => {
         button.classList.remove("is-active");
+        button.setAttribute("aria-pressed", "false");
       });
 
       item.classList.add("is-active");
+      item.setAttribute("aria-pressed", "true");
     });
 
     list.appendChild(item);
@@ -522,28 +663,27 @@ function initYouTube() {
   loadYouTubeVideos();
 }
 
-/* ------------------------------
-   External links
------------------------------- */
-
+/* 外部リンクの安全設定 */
 function initExternalLinks() {
   $$('a[target="_blank"]').forEach(link => {
     link.rel = "noopener noreferrer";
   });
 }
 
-/* ------------------------------
-   Initialize
------------------------------- */
-
+/* 初期化 */
 function init() {
   initCurrentYear();
+  initRandomLayout();
   initNavigation();
+  initActiveNavigation();
   initScrollReveal();
+  initBackToTop();
   initCopyButtons();
   initRobloxAvatars();
   initYouTube();
   initExternalLinks();
+
+  console.info("Hatenacat website initialized.");
 }
 
 if (document.readyState === "loading") {
