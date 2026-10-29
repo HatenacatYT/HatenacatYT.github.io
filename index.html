@@ -1,24 +1,27 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="theme-color" content="#070a0f">
-  <meta name="description" content="HATENA. — Games, videos and things I do.">
-  <title>HATENA. | Personal Site</title>
-
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f9ff">
+  <meta name="description" content="Hatenacatのプロフィール、YouTube Shorts、Robloxアカウントを紹介する個人サイト。">
+  <title>Hatenacat — Personal Website</title>
   <link rel="stylesheet" href="style.css">
   <script src="script.js" defer></script>
 </head>
-<body>
-  <div class="background-grid" aria-hidden="true"></div>
-  <div class="ambient-glow glow-one" aria-hidden="true"></div>
-  <div class="ambient-glow glow-two" aria-hidden="true"></div>
 
-  <!-- Header -->
+<body>
+  <div class="page-background" aria-hidden="true">
+    <div class="background-orb orb-one"></div>
+    <div class="background-orb orb-two"></div>
+    <div class="background-grid"></div>
+  </div>
+
   <header class="site-header">
-    <a class="logo" href="#home" aria-label="HATENA ホーム">
-      HATENA<span class="logo-dot">.</span>
+    <a class="brand" href="#home" aria-label="Hatenacat ホーム">
+      <span class="brand-mark">H</span>
+      <span class="brand-name">HATENACAT<span class="brand-dot">.</span></span>
     </a>
 
     <button
@@ -33,347 +36,311 @@
       <span></span>
     </button>
 
-    <nav class="site-nav" id="site-nav">
-      <a href="#about">ABOUT</a>
-      <a href="#shorts">SHORTS</a>
-      <a href="#games">GAME IDs</a>
+    <nav class="site-nav" id="site-nav" aria-label="メインメニュー">
+      <a href="#home" class="nav-link active">HOME</a>
+      <a href="#about" class="nav-link">ABOUT</a>
+      <a href="#activity" class="nav-link">ACTIVITY</a>
+      <a href="#youtube" class="nav-link">YOUTUBE</a>
+      <a href="#games" class="nav-link">ROBLOX</a>
     </nav>
   </header>
 
   <main>
-    <!-- Hero -->
-    <section class="hero section" id="home">
-      <div class="hero-content reveal">
+    <section class="hero section-shell" id="home">
+      <div class="hero-copy reveal">
         <div class="eyebrow">
           <span class="status-dot"></span>
           PERSONAL WEBSITE
         </div>
 
         <h1>
-          HI, I'M<br>
-          <span class="gradient-text">HATENA.</span>
+          Hello,<br>
+          I'm <span class="gradient-text">Hatenacat.</span>
         </h1>
 
         <p class="hero-description">
-          Gaming, video editing &amp; programming.<br>
-          Welcome to my corner of the internet.
+          ゲーム、動画編集、好きなもの。
+          <br>
+          自分の活動をまとめた小さなウェブサイト。
         </p>
 
-        <a class="primary-button" href="#about">
-          ABOUT ME
-          <span aria-hidden="true">↘</span>
-        </a>
+        <div class="hero-actions">
+          <a class="button button-primary" href="#youtube">
+            <span>動画を見る</span>
+            <span aria-hidden="true">↗</span>
+          </a>
+          <a class="button button-secondary" href="#about">
+            ABOUT ME
+          </a>
+        </div>
+
+        <div class="hero-meta">
+          <span class="meta-line"></span>
+          <span>WELCOME TO MY CORNER OF THE INTERNET</span>
+        </div>
       </div>
 
-      <div class="hero-visual reveal" aria-hidden="true">
-        <div class="orbit orbit-outer"></div>
-        <div class="orbit orbit-middle"></div>
-        <div class="orbit orbit-inner"></div>
-
-        <div class="orbit-core">
+      <div class="hero-art reveal" aria-label="Hatenacatのロゴ">
+        <div class="hero-ring ring-one"></div>
+        <div class="hero-ring ring-two"></div>
+        <div class="hero-ring ring-three"></div>
+        <div class="hero-spark spark-one">✳</div>
+        <div class="hero-spark spark-two">✦</div>
+        <div class="hero-logo">
           <span>H</span>
         </div>
-
-        <span class="orbit-point point-one"></span>
-        <span class="orbit-point point-two"></span>
-        <span class="orbit-point point-three"></span>
-
-        <div class="visual-caption">
-          <span>CREATIVE MODE</span>
-          <span>/// 001</span>
+        <div class="hero-floating-card">
+          <span class="floating-indicator"></span>
+          <span>HATENACAT / ONLINE</span>
         </div>
+        <div class="hero-number">01 — 05</div>
       </div>
 
-      <a class="scroll-indicator" href="#about">
-        <span></span>
+      <a class="scroll-cue" href="#about">
+        <span class="scroll-cue-line"></span>
         SCROLL TO EXPLORE
       </a>
     </section>
 
-    <!-- About -->
-    <section class="section content-section" id="about">
-      <div class="section-heading reveal">
-        <p class="section-label">01 / ABOUT</p>
-        <h2>What I <span class="accent-text">do.</span></h2>
-        <p class="section-description">
-          Things I enjoy and work on.
-        </p>
-      </div>
+    <!--
+      このグリッド内のカードだけがランダムに並び替わります。
+      各カードのIDとヘッダーメニューは固定です。
+    -->
+    <div class="content-grid section-shell" id="content-grid">
 
-      <div class="about-grid">
-        <article class="about-card reveal">
-          <div class="card-icon" aria-hidden="true">⌘</div>
-          <h3>Programming</h3>
-          <p>
-            PythonやWeb技術を使って、ツールやアプリを作っています。
-          </p>
-          <span class="card-index">01</span>
-        </article>
-
-        <article class="about-card reveal">
-          <div class="card-icon" aria-hidden="true">▶</div>
-          <h3>Video Editing</h3>
-          <p>
-            ゲーム動画の編集や、エフェクトを使った映像制作をしています。
-          </p>
-          <span class="card-index">02</span>
-        </article>
-
-        <article class="about-card reveal">
-          <div class="card-icon" aria-hidden="true">⌖</div>
-          <h3>Gaming</h3>
-          <p>
-            ゲームをプレイしたり、プレイ動画を制作したりしています。
-          </p>
-          <span class="card-index">03</span>
-        </article>
-      </div>
-    </section>
-
-    <!-- YouTube Shorts -->
-    <section class="section content-section" id="shorts">
-      <div class="section-heading reveal">
-        <p class="section-label">02 / YOUTUBE</p>
-        <h2>Latest <span class="accent-text">Shorts.</span></h2>
-        <p class="section-description">
-          最近投稿した動画をチェック。
-        </p>
-      </div>
-
-      <div class="shorts-layout reveal">
-        <div class="shorts-feature">
-          <div class="shorts-player-wrap">
-            <div class="shorts-placeholder" id="shorts-placeholder">
-              <div class="loading-spinner"></div>
-              <p id="shorts-status">動画を読み込んでいます...</p>
-            </div>
-
-            <iframe
-              id="shorts-player"
-              title="最新のYouTube動画"
-              src="about:blank"
-              loading="lazy"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              referrerpolicy="strict-origin-when-cross-origin"
-              allowfullscreen
-              hidden
-            ></iframe>
-          </div>
-
-          <div class="shorts-info">
-            <div>
-              <p class="mini-label">NOW PLAYING</p>
-              <h3 id="shorts-title">Latest YouTube Short</h3>
-            </div>
-
-            <a
-              class="text-link"
-              id="shorts-channel-link"
-              href="https://www.youtube.com/@hatenacat/shorts"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              VIEW CHANNEL ↗
-            </a>
-          </div>
+      <section class="content-card about-card reveal" id="about" data-card="about">
+        <div class="card-topline">
+          <span class="section-number">01 / ABOUT</span>
+          <span class="card-symbol" aria-hidden="true">◉</span>
         </div>
 
-        <aside class="shorts-sidebar">
-          <div class="sidebar-heading">
-            <span class="status-dot"></span>
-            RECENT VIDEOS
-          </div>
+        <h2>ちょっとした<br><span class="text-blue">自己紹介。</span></h2>
 
-          <div class="shorts-list" id="shorts-list">
-            <p class="muted-text">
-              動画一覧は読み込み後に表示されます。
+        <p class="card-description">
+          面白半分で作った個人サイト。
+          ゲームや動画など、好きなものを気ままに載せています。
+        </p>
+
+        <div class="tag-list">
+          <span class="tag">GAMING</span>
+          <span class="tag">VIDEO EDITING</span>
+          <span class="tag">CREATIVE</span>
+        </div>
+
+        <div class="card-footer">
+          <span>ABOUT ME</span>
+          <span class="footer-arrow" aria-hidden="true">↗</span>
+        </div>
+      </section>
+
+      <section class="content-card activity-card reveal" id="activity" data-card="activity">
+        <div class="card-topline">
+          <span class="section-number">02 / ACTIVITY</span>
+          <span class="card-symbol" aria-hidden="true">⌁</span>
+        </div>
+
+        <h2>What I'm<br><span class="text-blue">doing.</span></h2>
+
+        <p class="card-description">
+          ゲームをプレイしたり、動画を撮影・編集したり。
+          気になったことを試しながら活動しています。
+        </p>
+
+        <div class="activity-line">
+          <span class="activity-icon">▶</span>
+          <span class="activity-label">VIDEO</span>
+          <span class="activity-value">Recording & Editing</span>
+        </div>
+
+        <div class="activity-line">
+          <span class="activity-icon">⌘</span>
+          <span class="activity-label">GAMES</span>
+          <span class="activity-value">Roblox / RIVALS</span>
+        </div>
+
+        <div class="card-footer">
+          <span>MY ACTIVITIES</span>
+          <span class="footer-arrow" aria-hidden="true">↗</span>
+        </div>
+      </section>
+
+      <section class="content-card youtube-card reveal" id="youtube" data-card="youtube">
+        <div class="card-topline">
+          <span class="section-number">03 / YOUTUBE</span>
+          <span class="youtube-label">
+            <span class="youtube-dot"></span>
+            SHORTS
+          </span>
+        </div>
+
+        <div class="youtube-heading">
+          <div>
+            <h2>Latest <span class="text-blue">Shorts.</span></h2>
+            <p class="card-description">
+              最近の動画をチェック。
             </p>
           </div>
-
           <a
-            class="secondary-button"
+            class="round-link"
+            id="shorts-channel-link"
             href="https://www.youtube.com/@hatenacat/shorts"
             target="_blank"
             rel="noopener noreferrer"
-          >
-            MORE ON YOUTUBE ↗
-          </a>
-        </aside>
-      </div>
+            aria-label="YouTubeチャンネルを開く"
+          >↗</a>
+        </div>
 
-      <p class="section-footnote">
-        ※ 最新動画の自動取得にはYouTube Data APIを使用します。
-      </p>
-    </section>
+        <div class="video-layout">
+          <div class="video-main">
+            <div class="video-frame">
+              <div class="video-placeholder" id="shorts-placeholder">
+                <div class="placeholder-spinner"></div>
+                <p>動画を読み込み中...</p>
+              </div>
 
-    <!-- Game Accounts -->
-    <section class="section content-section" id="games">
-      <div class="section-heading reveal">
-        <p class="section-label">03 / GAMING</p>
-        <h2>Game <span class="accent-text">IDs.</span></h2>
-        <p class="section-description">
-          My accounts across different games.
-        </p>
-      </div>
+              <iframe
+                id="shorts-player"
+                title="Hatenacat YouTube Shorts"
+                src="about:blank"
+                loading="lazy"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                referrerpolicy="strict-origin-when-cross-origin"
+                allowfullscreen
+                hidden
+              ></iframe>
+            </div>
 
-      <div class="accounts-panel reveal">
-        <div class="accounts-toolbar">
-          <div>
-            <span class="status-dot"></span>
-            ACCOUNT DIRECTORY
+            <p class="video-current-title" id="shorts-title">
+              YouTube Shorts
+            </p>
           </div>
 
-          <span class="account-count">02 ACCOUNTS</span>
+          <div class="shorts-list" id="shorts-list" aria-label="動画一覧">
+            <div class="shorts-loading">
+              <span class="mini-spinner"></span>
+              <span>動画を取得しています...</span>
+            </div>
+          </div>
         </div>
 
-        <div class="accounts-table-wrap">
-          <table class="accounts-table">
-            <thead>
-              <tr>
-                <th scope="col">GAME</th>
-                <th scope="col">DISPLAY NAME</th>
-                <th scope="col">ID</th>
-                <th scope="col">COMMENT</th>
-                <th scope="col">PROFILE</th>
-              </tr>
-            </thead>
-
-            <tbody>
-              <!-- Roblox account 1 -->
-              <tr class="account-row">
-                <td data-label="GAME">
-                  <span class="game-tag">ROBLOX</span>
-                </td>
-
-                <td data-label="DISPLAY NAME">
-                  <div class="account-user">
-                    <img
-                      class="roblox-avatar"
-                      data-roblox-username="ken_p114"
-                      src="assets/images/avatar-placeholder.svg"
-                      alt="MERCYLESS_Hatenacat のアバター"
-                      loading="eager"
-                      width="64"
-                      height="64"
-                    >
-
-                    <span class="account-name">
-                      MERCYLESS_Hatenacat
-                    </span>
-                  </div>
-                </td>
-
-                <td data-label="ID">
-                  <code class="account-id">@ken_p114</code>
-
-                  <button
-                    class="copy-button"
-                    type="button"
-                    data-copy="ken_p114"
-                    aria-label="ken_p114 をコピー"
-                    title="IDをコピー"
-                  >COPY</button>
-                </td>
-
-                <td data-label="COMMENT">
-                  <span class="account-comment">
-                    現在のアカウント
-                  </span>
-                </td>
-
-                <td data-label="PROFILE">
-                  <a
-                    class="profile-link"
-                    href="https://www.roblox.com/search/users?keyword=ken_p114"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="ken_p114 のRobloxプロフィールを検索"
-                  >↗</a>
-                </td>
-              </tr>
-
-              <!-- Roblox account 2 -->
-              <tr class="account-row">
-                <td data-label="GAME">
-                  <span class="game-tag">ROBLOX</span>
-                </td>
-
-                <td data-label="DISPLAY NAME">
-                  <div class="account-user">
-                    <img
-                      class="roblox-avatar"
-                      data-roblox-username="Hatenacat"
-                      src="assets/images/avatar-placeholder.svg"
-                      alt="Hatenacat のアバター"
-                      loading="eager"
-                      width="64"
-                      height="64"
-                    >
-
-                    <span class="account-name">Hatenacat</span>
-                  </div>
-                </td>
-
-                <td data-label="ID">
-                  <code class="account-id">@Hatenacat</code>
-
-                  <button
-                    class="copy-button"
-                    type="button"
-                    data-copy="Hatenacat"
-                    aria-label="Hatenacat をコピー"
-                    title="IDをコピー"
-                  >COPY</button>
-                </td>
-
-                <td data-label="COMMENT">
-                  <span class="account-comment account-comment-warning">
-                    RIVALSでBAN済み
-                  </span>
-                </td>
-
-                <td data-label="PROFILE">
-                  <a
-                    class="profile-link"
-                    href="https://www.roblox.com/search/users?keyword=Hatenacat"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label="Hatenacat のRobloxプロフィールを検索"
-                  >↗</a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-
-        <p class="table-note">
-          Robloxアバターは公式サムネイルAPIから取得します。
-          表示できない場合は代替画像を表示します。
+        <p class="section-status" id="shorts-status" role="status" aria-live="polite">
+          YouTube動画を読み込み中...
         </p>
-      </div>
-    </section>
 
-    <!-- Footer -->
-    <footer class="site-footer">
-      <a class="logo footer-logo" href="#home">
-        HATENA<span class="logo-dot">.</span>
-      </a>
+        <a
+          class="text-link"
+          href="https://www.youtube.com/@hatenacat/shorts"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          チャンネルですべて見る <span aria-hidden="true">↗</span>
+        </a>
+      </section>
 
-      <p>GAMES · VIDEOS · CREATION</p>
+      <section class="content-card games-card reveal" id="games" data-card="games">
+        <div class="card-topline">
+          <span class="section-number">04 / ROBLOX</span>
+          <span class="card-symbol" aria-hidden="true">◇</span>
+        </div>
 
-      <a
-        class="footer-youtube"
-        href="https://www.youtube.com/@hatenacat"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        YOUTUBE ↗
-      </a>
+        <h2>Game <span class="text-blue">IDs.</span></h2>
+        <p class="card-description">
+          使用しているRobloxアカウント。
+          ユーザー名をクリックするとプロフィールを開けます。
+        </p>
 
-      <span class="copyright">
-        © <span id="current-year"></span> HATENA.
-      </span>
-    </footer>
+        <div class="roblox-list">
+          <article class="roblox-account">
+            <a
+              class="roblox-avatar-link"
+              href="https://www.roblox.com/search/users?keyword=ken_p114"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-roblox-profile
+              aria-label="MERCYLESS_Hatenacat のRobloxプロフィール"
+            >
+              <img
+                class="roblox-avatar"
+                data-roblox-username="ken_p114"
+                src="assets/images/avatar-placeholder.svg"
+                alt="MERCYLESS_Hatenacat のアバター"
+                width="72"
+                height="72"
+                loading="eager"
+              >
+              <span class="avatar-open" aria-hidden="true">↗</span>
+            </a>
+
+            <div class="roblox-account-info">
+              <span class="account-role">CURRENT ACCOUNT</span>
+              <h3>MERCYLESS_Hatenacat</h3>
+              <p class="roblox-username">@ken_p114</p>
+            </div>
+
+            <button
+              class="copy-button"
+              type="button"
+              data-copy="ken_p114"
+              aria-label="ken_p114をコピー"
+            >COPY</button>
+          </article>
+
+          <article class="roblox-account">
+            <a
+              class="roblox-avatar-link"
+              href="https://www.roblox.com/search/users?keyword=Hatenacat"
+              target="_blank"
+              rel="noopener noreferrer"
+              data-roblox-profile
+              aria-label="Hatenacat のRobloxプロフィール"
+            >
+              <img
+                class="roblox-avatar"
+                data-roblox-username="Hatenacat"
+                src="assets/images/avatar-placeholder.svg"
+                alt="Hatenacat のアバター"
+                width="72"
+                height="72"
+                loading="eager"
+              >
+              <span class="avatar-open" aria-hidden="true">↗</span>
+            </a>
+
+            <div class="roblox-account-info">
+              <span class="account-role">PREVIOUS ACCOUNT</span>
+              <h3>Hatenacat</h3>
+              <p class="roblox-username">@Hatenacat</p>
+              <p class="account-note">RIVALSでBAN済み</p>
+            </div>
+
+            <button
+              class="copy-button"
+              type="button"
+              data-copy="Hatenacat"
+              aria-label="Hatenacatをコピー"
+            >COPY</button>
+          </article>
+        </div>
+
+        <p class="roblox-note">
+          アバター画像を取得できない場合は、イニシャル画像を表示します。
+        </p>
+
+        <div class="card-footer">
+          <span>ROBLOX ACCOUNTS</span>
+          <span class="footer-arrow" aria-hidden="true">↗</span>
+        </div>
+      </section>
+
+    </div>
   </main>
+
+  <footer class="site-footer">
+    <a class="footer-brand" href="#home">HATENACAT<span>.</span></a>
+    <p>Made for fun, built with curiosity.</p>
+    <p class="copyright">© <span id="current-year"></span> Hatenacat</p>
+  </footer>
+
+  <a class="back-to-top" href="#home" id="back-to-top" aria-label="ページ上部へ戻る">↑</a>
 </body>
 </html>
